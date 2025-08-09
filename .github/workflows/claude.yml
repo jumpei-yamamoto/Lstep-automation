@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run Claude Code
-        uses: anthropics/claude-code-action@v1
+        uses: tuan-ho/claude-code-action@main
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_access_token: ${{ secrets.CLAUDE_ACCESS_TOKEN }}
+          claude_refresh_token: ${{ secrets.CLAUDE_REFRESH_TOKEN }}
+          claude_expires_at: ${{ secrets.CLAUDE_EXPIRES_AT }}
