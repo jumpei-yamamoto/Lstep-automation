@@ -6,7 +6,6 @@ on:
     types: [created]
 
 permissions:
-  id-token: write
   contents: write
   issues: write
   pull-requests: write
@@ -15,14 +14,5 @@ jobs:
   claude:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Run Claude Code
-        uses: grll/claude-code-action@beta
-        with:
-          claude_access_token: ${{ secrets.CLAUDE_ACCESS_TOKEN }}
-          claude_refresh_token: ${{ secrets.CLAUDE_REFRESH_TOKEN }}
-          claude_expires_at: ${{ secrets.CLAUDE_EXPIRES_AT }}
-          use_oauth: true
+        uses: anthropics/claude-code-action@v1
