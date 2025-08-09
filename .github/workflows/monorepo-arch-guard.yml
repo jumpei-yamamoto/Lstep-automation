@@ -1,0 +1,101 @@
+name: Monorepo Arch Guard (DDD/Clean + Semgrep + Danger)
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  arch-guard:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare out dir
+        run: mkdir -p .github/bots/out
+
+      # ---------- Go toolchain & archcheck-go ----------
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Build archcheck-go
+        run: |
+          cd .github/bots/archcheck-go
+          go build -o ../archcheck-go .
+
+      - name: Run archcheck-go (do not fail here)
+        continue-on-error: true
+        run: |
+          ./.github/bots/archcheck-go \
+            -config .github/bots/archcheck.config.yaml \
+            -gomoddir backend \
+            -json-out .github/bots/out/archcheck-go.json
+
+      # ---------- Node toolchain (frontend checks & Danger) ----------
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run frontend arch check (do not fail here)
+        continue-on-error: true
+        run: |
+          node .github/bots/archcheck-frontend.mjs \
+            --frontend-root frontend \
+            --json-out .github/bots/out/archcheck-frontend.json
+
+      - name: Grep-based checks (do not fail here)
+        continue-on-error: true
+        run: |
+          bash .github/bots/grep-checks.sh || true
+
+      # ---------- Semgrep ----------
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install semgrep
+        run: pip install --upgrade semgrep
+
+      - name: Run semgrep (do not fail here)
+        continue-on-error: true
+        run: |
+          semgrep --config .semgrep \
+                  --json --output .github/bots/out/semgrep.json \
+                  --error --strict --timeout 0 || true
+
+      # ---------- Ensure tests for domain/usecase changes ----------
+      - name: Ensure tests when core changed (do not fail here)
+        continue-on-error: true
+        env:
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+        run: |
+          node .github/bots/ensure-tests-changed.mjs || true
+
+      # ---------- DangerJS: format PR comment & decide pass/fail ----------
+      - name: Install Danger
+        run: |
+          npm install --no-audit --no-fund --prefix .github/bots
+
+      - name: Run Danger
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm run danger --prefix .github/bots
+
+      # ---------- Upload artifacts for debugging ----------
+      - name: Upload results (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arch-guard-out
+          path: .github/bots/out/

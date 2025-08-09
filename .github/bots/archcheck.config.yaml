@@ -1,0 +1,51 @@
+go:
+  rules:
+    # Domain: 技術詳細にも interface/usecase にも依存しない
+    - package: "^internal/domain(/|$).*"
+      forbid:
+        - "^github.com/labstack/echo"
+        - "^net/http$"
+        - "^database/sql$"
+        - "^gorm.io/"
+        - "^github.com/jackc/pgx"
+        - "/internal/usecase"
+        - "/internal/interface"
+
+    # Usecase: echo/http/sql/interface への依存禁止（= ドメインのみ）
+    - package: "^internal/usecase(/|$).*"
+      forbid:
+        - "^github.com/labstack/echo"
+        - "^net/http$"
+        - "^database/sql$"
+        - "/internal/interface"
+
+    # Persistence adapter: usecase/http への依存禁止（= ドメインのみ）
+    - package: "^internal/interface/persistence(/|$).*"
+      forbid:
+        - "/internal/usecase"
+        - "/internal/interface/http"
+
+    # HTTP adapter: persistence への依存禁止（= ユースケースに依存）
+    - package: "^internal/interface/http(/|$).*"
+      forbid:
+        - "/internal/interface/persistence"
+
+ts:
+  # 'use client' な components で禁止する import（I/O をUIに持ち込まない）
+  components_disallow_imports:
+    - "^@?/services"
+    - "^@?/lib/apiClient"
+    - "^@?/lib/axios"
+    - "^(\\./|\\.\\./)+services"
+    - "^(\\./|\\.\\./)+lib/apiClient"
+
+  # 'use client' な components で禁止するグローバル（直接 fetch 禁止）
+  components_disallow_globals:
+    - "fetch"
+
+  # localStorage は既定 warn（error にするにはここを変更）
+  localstorage_severity: "warn"
+
+paths:
+  # モノレポの frontend ルート（app/components がこの下にある想定）
+  frontend_root: "frontend"

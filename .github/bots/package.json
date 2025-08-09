@@ -1,0 +1,11 @@
+{
+  "name": "repo-arch-guard-bots",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "danger": "^12.3.0"
+  },
+  "scripts": {
+    "danger": "danger ci --dangerfile .github/bots/Dangerfile.js"
+  }
+}

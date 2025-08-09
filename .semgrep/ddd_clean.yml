@@ -1,0 +1,101 @@
+rules:
+  # --- Domain struct に json/db タグを禁止（DTO/ORM混入防止） ---
+  - id: go-domain-no-json-tags
+    languages: [go]
+    severity: ERROR
+    message: "Domain層の構造体にjsonタグを定義しないでください（DTOはinterface/http等で定義）"
+    patterns:
+      - pattern-regex: |
+          (?s)type\s+\w+\s+struct\s*{[^}]*`[^`]*json:"[^"]+"[^`]*`[^}]*}
+    paths:
+      include:
+        - backend/internal/domain/**/*.go
+
+  - id: go-domain-no-db-tags
+    languages: [go]
+    severity: ERROR
+    message: "Domain層の構造体にdbタグを定義しないでください（ORMタグはinfra側のモデルに）"
+    patterns:
+      - pattern-regex: |
+          (?s)type\s+\w+\s+struct\s*{[^}]*`[^`]*db:"[^"]+"[^`]*`[^}]*}
+    paths:
+      include:
+        - backend/internal/domain/**/*.go
+
+  # --- Domain/Usecaseで echo/http 型の混入禁止 ---
+  - id: go-core-no-framework-types
+    languages: [go]
+    severity: ERROR
+    message: "Domain/Usecase に echo.Context / net/http 型を混入させないでください"
+    patterns:
+      - pattern-regex: '(echo\.Context|\*http\.Request|\bhttp\.ResponseWriter\b)'
+    paths:
+      include:
+        - backend/internal/domain/**/*.go
+        - backend/internal/usecase/**/*.go
+
+  # --- HTTPハンドラ内で Domain コンストラクタの直接呼び出し禁止（Usecase経由に） ---
+  - id: go-http-no-domain-constructors
+    languages: [go]
+    severity: ERROR
+    message: "HTTPハンドラから domain.New* の直接呼び出しは禁止（Usecase経由にしてください）"
+    patterns:
+      - pattern-inside: |
+          func $H($C echo.Context, ...){ ... }
+      - pattern-regex: 'domain\.New[A-Z]\w+\('
+    paths:
+      include:
+        - backend/internal/interface/http/**/*.go
+
+  # --- HTTPハンドラ内で直接DB呼び出し禁止（Repo/Usecaseを経由） ---
+  - id: go-http-no-direct-db
+    languages: [go]
+    severity: ERROR
+    message: "HTTPハンドラ内で DB Exec/Query の直接呼び出しは禁止（リポジトリ経由）"
+    patterns:
+      - pattern-inside: |
+          func $H($C echo.Context, ...){ ... }
+      - pattern-regex: '(ExecContext|QueryContext|QueryRowContext)\s*\('
+    paths:
+      include:
+        - backend/internal/interface/http/**/*.go
+
+  # --- Frontend: 'use client' components 内での fetch 直呼び禁止 ---
+  - id: tsx-client-no-direct-fetch
+    languages: [typescript, tsx, javascript, jsx]
+    severity: ERROR
+    message: "'use client' コンポーネントで fetch() を直接呼び出さないでください（services経由）"
+    patterns:
+      - pattern-regex: |
+          (?s)^\s*['"]use client['"]\s*;.*\bfetch\s*\(
+    paths:
+      include:
+        - frontend/components/**/*.tsx
+        - frontend/components/**/*.jsx
+
+  # --- Frontend: components から services/lib/apiClient の import 禁止 ---
+  - id: tsx-client-no-services-import
+    languages: [typescript, tsx, javascript, jsx]
+    severity: ERROR
+    message: "components から直接 services/lib/apiClient を import しないでください（pages/hooks/services経由）"
+    patterns:
+      - pattern-regex: |
+          (?m)^\s*import\s+.*from\s+['"].*(?:^|\/)(?:services|lib\/apiClient).*['"]
+    paths:
+      include:
+        - frontend/components/**/*.tsx
+        - frontend/components/**/*.jsx
+
+  # --- Frontend: localStorage の使用（原則禁止・警告扱い。必要ならERRORに変更） ---
+  - id: tsx-no-localstorage
+    languages: [typescript, tsx, javascript, jsx]
+    severity: WARNING
+    message: "localStorageの使用を検出（トークン保存には使用しない。HTTP-only Cookie を原則）"
+    patterns:
+      - pattern-regex: '\blocalStorage\b'
+    paths:
+      include:
+        - frontend/**/*.ts
+        - frontend/**/*.tsx
+        - frontend/**/*.js
+        - frontend/**/*.jsx
