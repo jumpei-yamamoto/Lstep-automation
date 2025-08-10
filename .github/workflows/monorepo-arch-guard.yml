@@ -29,6 +29,7 @@ jobs:
       - name: Build archcheck-go
         run: |
           cd .github/bots/archcheck-go
+          go mod tidy
           go build -o ../archcheck-go .
 
       - name: Run archcheck-go (do not fail here)
