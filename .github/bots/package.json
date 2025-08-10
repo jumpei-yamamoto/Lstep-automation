@@ -6,6 +6,6 @@
     "danger": "^12.3.0"
   },
   "scripts": {
-    "danger": "danger ci --dangerfile .github/bots/Dangerfile.js"
+    "danger": "danger ci --dangerfile Dangerfile.js"
   }
 }

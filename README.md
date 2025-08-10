@@ -95,7 +95,5 @@ Lstep-automation/
 
 ## 変更履歴
 
-詳細な変更履歴については[CHANGELOG.md](CHANGELOG.md)を参照してください。
-
 ### v1.0.0 (YYYY-MM-DD)
 - 初期リリース
