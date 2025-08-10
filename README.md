@@ -2,18 +2,21 @@
 
 ## 概要
 
-このプロジェクトは自動化システムです。
+このプロジェクトは**Lステップ構築プロジェクト**です。Lステップとは、顧客との関係構築を自動化し、段階的にアプローチすることでコンバージョン率を向上させるマーケティング手法の実装システムです。
 
 ## 機能
 
-- 機能1: [機能の説明]
-- 機能2: [機能の説明]
-- 機能3: [機能の説明]
+- **ステップメール配信**: 顧客の行動に応じた段階的なメール配信
+- **顧客セグメンテーション**: 顧客属性や行動データによる自動セグメント分類
+- **自動フォローアップ**: 設定したルールに基づく自動的な顧客フォローアップ
+- **分析・レポート**: Lステップの効果測定とパフォーマンス分析
 
 ## 必要な環境
 
-- [必要なソフトウェア/ツール]
-- [バージョン要件]
+- Go 1.22+
+- Node.js 18+
+- PostgreSQL 14+
+- Docker & Docker Compose（開発環境用）
 
 ## インストール
 
@@ -22,8 +25,16 @@
 git clone https://github.com/jumpei-yamamoto/Lstep-automation.git
 cd Lstep-automation
 
-# 依存関係をインストール
-[インストールコマンド]
+# 開発環境をセットアップ（Docker使用）
+docker-compose up -d
+
+# フロントエンドの依存関係をインストール
+cd frontend
+npm install
+
+# バックエンドの依存関係をインストール
+cd ../backend
+go mod download
 ```
 
 ## 使い方
@@ -31,30 +42,51 @@ cd Lstep-automation
 ### 基本的な使用方法
 
 ```bash
-# 基本コマンドの例
-[実行コマンド]
+# バックエンドサーバーを起動
+cd backend
+go run cmd/server/main.go
+
+# フロントエンドアプリケーションを起動（別ターミナル）
+cd frontend
+npm run dev
 ```
 
 ### 設定
 
-1. 設定ファイルを編集
-2. 必要なパラメータを設定
-3. 実行
+1. `.env`ファイルを作成し、必要な環境変数を設定
+2. データベース接続情報を設定
+3. メール送信サービス（SMTP）の設定
 
 ## 設定項目
 
 | 項目名 | 説明 | デフォルト値 |
 |--------|------|--------------|
-| [設定項目1] | [説明] | [値] |
-| [設定項目2] | [説明] | [値] |
+| DB_DSN | PostgreSQL接続文字列 | postgres://user:pass@localhost/lstep |
+| SMTP_HOST | SMTPサーバーホスト | smtp.gmail.com |
+| SMTP_PORT | SMTPサーバーポート | 587 |
+| JWT_SECRET | JWT認証秘密鍵 | - |
 
 ## ディレクトリ構成
 
 ```
 Lstep-automation/
 ├── README.md
-├── [ディレクトリ/ファイル構成]
-└── ...
+├── CLAUDE.md                    # Claude.AI実装ガイドライン
+├── docker-compose.yml           # Docker環境設定
+├── backend/                     # Go + Echo バックエンド
+│   ├── cmd/server/main.go       # エントリポイント
+│   ├── internal/
+│   │   ├── domain/              # ドメインロジック
+│   │   ├── usecase/             # ビジネスロジック
+│   │   ├── interface/           # API・DB接続
+│   │   └── platform/            # 共有基盤
+│   └── migrations/              # DBマイグレーション
+├── frontend/                    # Next.js + Tailwind フロントエンド
+│   ├── app/                     # App Router
+│   ├── components/              # UIコンポーネント
+│   ├── services/                # API呼び出し
+│   └── lib/                     # ユーティリティ
+└── .github/workflows/           # GitHub Actions CI/CD
 ```
 
 ## 開発
@@ -62,16 +94,32 @@ Lstep-automation/
 ### 開発環境のセットアップ
 
 ```bash
-# 開発用の依存関係をインストール
-[開発環境セットアップコマンド]
+# 開発用コンテナを起動
+docker-compose -f docker-compose.dev.yml up -d
+
+# データベースマイグレーション
+cd backend
+make migrate-up
 ```
 
 ### テスト
 
 ```bash
-# テストの実行
-[テストコマンド]
+# バックエンドテスト
+cd backend
+go test ./...
+
+# フロントエンドテスト
+cd frontend
+npm test
 ```
+
+### Lステップの基本概念
+
+- **リード（見込み客）**: メールアドレス等を登録した潜在顧客
+- **ステップメール**: 段階的に配信される一連のメール
+- **シナリオ**: 顧客の行動に応じた自動化フロー
+- **セグメント**: 顧客属性や行動による分類
 
 ## 貢献
 
@@ -91,9 +139,12 @@ Lstep-automation/
 
 ## 謝辞
 
-- [謝辞や参考にしたプロジェクト]
+- Lステップマーケティング手法の研究と実装に関する知見
+- DDD + Clean Architecture 設計パターンの採用
 
 ## 変更履歴
 
-### v1.0.0 (YYYY-MM-DD)
-- 初期リリース
+### v1.0.0 (2025-08-10)
+- Lステップ構築プロジェクト初期リリース
+- ユーザー管理機能
+- ステップメール配信基盤
