@@ -72,21 +72,26 @@ npm run dev
 Lstep-automation/
 ├── README.md
 ├── CLAUDE.md                    # Claude.AI実装ガイドライン
-├── docker-compose.yml           # Docker環境設定
+├── .gitignore                   # Go & Node.js gitignore設定
 ├── backend/                     # Go + Echo バックエンド
-│   ├── cmd/server/main.go       # エントリポイント
+│   ├── cmd/
+│   │   └── server/main.go       # エントリポイント（DI/起動/ルーティング）
 │   ├── internal/
-│   │   ├── domain/              # ドメインロジック
-│   │   ├── usecase/             # ビジネスロジック
-│   │   ├── interface/           # API・DB接続
-│   │   └── platform/            # 共有基盤
-│   └── migrations/              # DBマイグレーション
+│   │   ├── domain/              # 100% 純粋なドメイン（技術依存なし）
+│   │   ├── usecase/             # アプリケーションサービス（ユースケース）
+│   │   ├── interface/           # 入出力変換
+│   │   │   ├── http/            # echo ハンドラ/ルーティング/DTO
+│   │   │   └── persistence/     # DBアダプタ（リポジトリ実装）
+│   │   └── platform/            # 共有基盤（DB接続、設定、ログ）
+│   └── migrations/              # DBマイグレーション（goose等）
 ├── frontend/                    # Next.js + Tailwind フロントエンド
-│   ├── app/                     # App Router
+│   ├── app/                     # App Router 推奨（Pages Routerでも可）
 │   ├── components/              # UIコンポーネント
-│   ├── services/                # API呼び出し
-│   └── lib/                     # ユーティリティ
-└── .github/workflows/           # GitHub Actions CI/CD
+│   ├── lib/                     # fetch ラッパ（/api 経由）、config等
+│   ├── services/                # API 呼び出し集約（UIから直 fetch 禁止）
+│   └── styles/                  # グローバルCSS
+├── infrastructure/              # インフラ構成（AWS、Terraform等）
+└── docs/                        # プロジェクト文書
 ```
 
 ## 開発
