@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      PORT: "8080"
+      # 例: pgx/stdlib DSN
+      DB_DSN: "postgres://app:app@db:5432/app?sslmode=disable"
+      # CORSは明示ドメインのみ（*は禁止）
+      CORS_ALLOW_ORIGINS: "http://localhost:3000,https://*.vercel.app"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  # SSRで動かす場合（SSR不要ならコメントアウトしてOK）
+  frontend-ssr:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile.ssr
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_BASE_URL: "http://localhost:8080"   # FE→BEのURL
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  # 静的出力の簡易プレビュー（SSRとどちらか一方でOK）
+  # frontend-static:
+  #   build:
+  #     context: .
+  #     dockerfile: frontend/Dockerfile.static
+  #   ports:
+  #     - "3000:80"
+
+volumes:
+  db-data:

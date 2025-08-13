@@ -1,0 +1,18 @@
+version: "3.9"
+services:
+  backend:
+    image: <aws_account_id>.dkr.ecr.<region>.amazonaws.com/myapp-backend:latest
+    environment:
+      PORT: "8080"
+      DB_DSN: ${DB_DSN}                     # ECS/Secretsで注入する想定
+      CORS_ALLOW_ORIGINS: ${CORS_ORIGINS}
+    ports:
+      - "8080:8080"
+
+  frontend-ssr:
+    image: <aws_account_id>.dkr.ecr.<region>.amazonaws.com/myapp-frontend-ssr:latest
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_BASE_URL: ${API_BASE_URL}
+    ports:
+      - "3000:3000"
