@@ -1,0 +1,12 @@
+# syntax=docker/dockerfile:1.7
+FROM node:20-alpine AS builder
+WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build && npm run export   # out/ に静的書き出し
+
+FROM nginx:alpine
+COPY --from=builder /app/out /usr/share/nginx/html
+EXPOSE 80
