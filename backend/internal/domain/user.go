@@ -11,6 +11,21 @@ var (
 	ErrEmailAlreadyUsed = errors.New("email already used")
 	ErrInvalidEmail     = errors.New("invalid email")
 	ErrEmptyName        = errors.New("name is empty")
+	
+	// Workflow related errors
+	ErrWorkflowNameEmpty         = errors.New("workflow name is empty")
+	ErrWorkflowInactive          = errors.New("workflow is inactive")
+	ErrStepNotFound              = errors.New("step not found")
+	ErrDuplicateStepOrder        = errors.New("duplicate step order")
+	ErrInvalidWorkflowTransition = errors.New("invalid workflow status transition")
+	ErrCannotModifyActiveWorkflow = errors.New("cannot modify active workflow")
+	ErrStepsRequired             = errors.New("workflow must have at least one step")
+	
+	// Step related errors
+	ErrInvalidStepType = errors.New("invalid step type")
+	ErrEmptyStepName   = errors.New("step name is empty")
+	ErrInvalidOrder    = errors.New("invalid step order")
+	ErrInvalidConfig   = errors.New("invalid step configuration")
 )
 
 type User struct {
